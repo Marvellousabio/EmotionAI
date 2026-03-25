@@ -10,6 +10,7 @@ export default function Create() {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isReadyToGenerate, setIsReadyToGenerate] = useState(false);
   const [media, setMedia] = useState<{ images: string[], videos: string[], voice: string[] }>({
     images: [],
     videos: [],
@@ -42,6 +43,14 @@ export default function Create() {
     setIsTyping(true);
 
     const response = await generateChatResponse(messages, input);
+    
+    // Check if the AI indicates it's ready to generate
+    const readyPatterns = ['ready to generate', 'click the generate', 'generate button', 'ready to create'];
+    const isReady = readyPatterns.some(pattern => response.toLowerCase().includes(pattern));
+    if (isReady) {
+      setIsReadyToGenerate(true);
+    }
+    
     setMessages(prev => [...prev, { role: 'model', text: response }]);
     setIsTyping(false);
   };
@@ -70,15 +79,50 @@ export default function Create() {
 
   const [previewData, setPreviewData] = useState<any>(null);
 
+  // Helper function to extract information from chat messages
+  const extractMomentInfo = () => {
+    const allText = messages.map(m => m.text).join(' ').toLowerCase();
+    const userMessages = messages.filter(m => m.role === 'user').map(m => m.text).join(' ').toLowerCase();
+    
+    // Detect occasion
+    let occasion = 'Special Occasion';
+    if (userMessages.includes('birthday') || allText.includes('birthday')) occasion = 'Birthday';
+    else if (userMessages.includes('anniversary') || allText.includes('anniversary')) occasion = 'Anniversary';
+    else if (userMessages.includes('proposal') || userMessages.includes('propose') || allText.includes('proposal')) occasion = 'Proposal';
+    else if (userMessages.includes('wedding') || allText.includes('wedding')) occasion = 'Wedding';
+    else if (userMessages.includes('graduation') || allText.includes('graduation')) occasion = 'Graduation';
+    else if (userMessages.includes('farewell') || allText.includes('farewell')) occasion = 'Farewell';
+    
+    // Detect relationship
+    let relationship = 'Partner';
+    if (userMessages.includes('mom') || userMessages.includes('mother') || allText.includes('mom') || allText.includes('mother')) relationship = 'Mother';
+    else if (userMessages.includes('dad') || userMessages.includes('father') || allText.includes('dad') || allText.includes('father')) relationship = 'Father';
+    else if (userMessages.includes('friend') || allText.includes('friend')) relationship = 'Friend';
+    else if (userMessages.includes('sister') || allText.includes('sister')) relationship = 'Sister';
+    else if (userMessages.includes('brother') || allText.includes('brother')) relationship = 'Brother';
+    else if (userMessages.includes('grandma') || userMessages.includes('grandmother') || allText.includes('grandma')) relationship = 'Grandmother';
+    else if (userMessages.includes('grandpa') || userMessages.includes('grandfather') || allText.includes('grandpa')) relationship = 'Grandfather';
+    else if (userMessages.includes('son') || userMessages.includes('daughter') || allText.includes('son') || allText.includes('daughter')) relationship = 'Child';
+    
+    // Detect tone
+    let tone = 'Romantic';
+    if (userMessages.includes('funny') || userMessages.includes('playful') || userMessages.includes('humor') || allText.includes('funny')) tone = 'Playful';
+    else if (userMessages.includes('sad') || userMessages.includes('miss') || userMessages.includes('memorial') || allText.includes('sad')) tone = 'Emotional';
+    else if (userMessages.includes('grateful') || userMessages.includes('thank') || userMessages.includes('appreciate') || allText.includes('grateful')) tone = 'Appreciative';
+    else if (userMessages.includes('romantic') || userMessages.includes('love') || userMessages.includes('love') || allText.includes('romantic')) tone = 'Romantic';
+    
+    return { occasion, relationship, tone };
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     
+    const { occasion, relationship, tone } = extractMomentInfo();
+    
     const momentData: MomentData = {
-      occasion: messages.find(m => m.text.toLowerCase().includes('birthday')) ? 'Birthday' : 
-                messages.find(m => m.text.toLowerCase().includes('anniversary')) ? 'Anniversary' : 
-                messages.find(m => m.text.toLowerCase().includes('proposal')) ? 'Proposal' : 'Special Occasion',
-      relationship: "Partner",
-      tone: "Romantic",
+      occasion,
+      relationship,
+      tone,
       memories: messages.filter(m => m.role === 'user').map(m => m.text),
       messages: [],
       media
@@ -170,7 +214,7 @@ export default function Create() {
               <p className="text-xs text-rose-700/70 uppercase tracking-widest">Designing your moment</p>
             </div>
           </div>
-          {messages.length > 4 && (
+          {(messages.length > 3 || isReadyToGenerate) && (
             <button 
               onClick={handleGenerate}
               disabled={isGenerating}

@@ -58,7 +58,7 @@ export default function Moment() {
         >
           <Heart className="w-12 h-12 text-rose-500 fill-rose-500 mx-auto" />
           <h1 className="font-serif text-5xl md:text-7xl italic text-rose-950">
-            {(data as any).heroMessage || `A Special ${data.occasion}`}
+            {data.heroMessage || `A Special ${data.occasion}`}
           </h1>
           <p className="font-body text-xl text-rose-900/70 max-w-2xl mx-auto">
             A digital archive of our most cherished memories.
@@ -95,7 +95,7 @@ export default function Moment() {
       {/* Media Timeline */}
       <section className="py-32 px-6 bg-white">
         <div className="max-w-6xl mx-auto space-y-24">
-          {(data as any).sections?.map((section: any, i: number) => (
+          {data.sections?.map((section, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }}

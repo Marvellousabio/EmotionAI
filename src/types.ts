@@ -11,6 +11,12 @@ export interface MomentData {
     voice: string[];
   };
   narrative?: string;
+  sections?: Array<{
+    title: string;
+    content: string;
+    suggestedMediaIndex: number;
+  }>;
+  heroMessage?: string;
   layout?: any;
 }
 
