@@ -1,0 +1,7 @@
+{
+  "name": "Moment Creation Engine",
+  "description": "Create deeply personalized digital experiences for emotional moments using AI.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
