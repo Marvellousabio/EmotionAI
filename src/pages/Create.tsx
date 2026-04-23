@@ -5,6 +5,12 @@ import { generateChatResponse, generateMomentNarrative } from '../services/ai';
 import { ChatMessage, MomentData } from '../types';
 import { useNavigate } from 'react-router-dom';
 
+const ComingSoonBadge = ({ label }: { label: string }) => (
+  <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide z-10">
+    {label}
+  </span>
+);
+
 export default function Create() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -45,7 +51,17 @@ export default function Create() {
     const response = await generateChatResponse(messages, input);
     
     // Check if the AI indicates it's ready to generate
-    const readyPatterns = ['ready to generate', 'click the generate', 'generate button', 'ready to create'];
+    const readyPatterns = [
+      'ready to generate',
+      'click the generate',
+      'generate button',
+      'ready to create',
+      'click the "generate"',
+      'click the generate button',
+      'generate button to see',
+      'ready to create your moment',
+      'i have everything i need'
+    ];
     const isReady = readyPatterns.some(pattern => response.toLowerCase().includes(pattern));
     if (isReady) {
       setIsReadyToGenerate(true);
@@ -53,6 +69,10 @@ export default function Create() {
     
     setMessages(prev => [...prev, { role: 'model', text: response }]);
     setIsTyping(false);
+  };
+
+  const handleComingSoon = (feature: string) => {
+    alert(`${feature} feature is coming soon!`);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'images' | 'videos' | 'voice') => {
@@ -265,13 +285,15 @@ export default function Create() {
               <ImageIcon className="w-5 h-5" />
               <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'images')} />
             </label>
-            <label className="cursor-pointer p-2 hover:bg-rose-50 rounded-full transition-colors text-rose-700">
+            <label className="relative cursor-pointer p-2 hover:bg-rose-50 rounded-full transition-colors text-rose-700">
               <Video className="w-5 h-5" />
-              <input type="file" className="hidden" accept="video/*" onChange={(e) => handleFileUpload(e, 'videos')} />
+              <ComingSoonBadge label="Coming Soon" />
+              <input type="file" className="hidden" accept="video/*" onClick={(e) => { e.preventDefault(); handleComingSoon('Video'); }} />
             </label>
-            <label className="cursor-pointer p-2 hover:bg-rose-50 rounded-full transition-colors text-rose-700">
+            <label className="relative cursor-pointer p-2 hover:bg-rose-50 rounded-full transition-colors text-rose-700">
               <Mic className="w-5 h-5" />
-              <input type="file" className="hidden" accept="audio/*" onChange={(e) => handleFileUpload(e, 'voice')} />
+              <ComingSoonBadge label="Coming Soon" />
+              <input type="file" className="hidden" accept="audio/*" onClick={(e) => { e.preventDefault(); handleComingSoon('Audio'); }} />
             </label>
             <div className="flex-grow text-xs text-rose-700/50 italic">
               {media.images.length + media.videos.length + media.voice.length} assets uploaded
